@@ -630,6 +630,25 @@ img, svg {
   cursor: not-allowed;
 }
 
+.btn-spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btn-spin 0.65s linear infinite;
+}
+.contact-form .btn.is-loading .btn-spinner {
+  display: inline-block;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .form-status {
   font-size: 14px;
   min-height: 20px;

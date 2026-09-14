@@ -70,6 +70,8 @@ const contactForm = document.getElementById("contact-form");
 if (contactForm) {
   const statusEl = document.getElementById("cf-status");
   const submitBtn = contactForm.querySelector("button[type='submit']");
+  const submitLabel = submitBtn.querySelector(".btn-label");
+  const minLoadingTime = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   contactForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -79,14 +81,18 @@ if (contactForm) {
     const payload = Object.fromEntries(new FormData(contactForm).entries());
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Wird gesendet…";
+    submitBtn.classList.add("is-loading");
+    submitLabel.textContent = "Wird gesendet…";
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const [response] = await Promise.all([
+        fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }),
+        minLoadingTime(700),
+      ]);
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
@@ -101,7 +107,8 @@ if (contactForm) {
       statusEl.classList.add("error");
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Nachricht senden";
+      submitBtn.classList.remove("is-loading");
+      submitLabel.textContent = "Nachricht senden";
     }
   });
 }

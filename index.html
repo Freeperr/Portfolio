@@ -222,7 +222,10 @@
           <textarea id="cf-message" name="message" rows="5" required></textarea>
         </div>
         <input type="text" name="company" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <button type="submit" class="btn btn-primary">Nachricht senden</button>
+        <button type="submit" class="btn btn-primary">
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span class="btn-label">Nachricht senden</span>
+        </button>
         <p class="form-status" id="cf-status" role="status" aria-live="polite"></p>
       </form>
 
