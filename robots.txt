@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://fynnpetersen.dev/sitemap.xml
+Sitemap: https://fynnpetersen.de/sitemap.xml

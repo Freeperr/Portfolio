@@ -1,7 +1,7 @@
 // Vercel Serverless Function. Benötigte Environment-Variablen (im Vercel-Dashboard setzen):
 //   RESEND_API_KEY     – API-Key aus dem Resend-Dashboard
-//   CONTACT_TO_EMAIL    – Empfänger-Adresse, z.B. hallo@fynnpetersen.dev
-//   CONTACT_FROM_EMAIL  – Absender auf verifizierter Domain, z.B. "Kontaktformular <kontakt@fynnpetersen.dev>"
+//   CONTACT_TO_EMAIL    – Empfänger-Adresse, z.B. hallo@fynnpetersen.de
+//   CONTACT_FROM_EMAIL  – Absender auf verifizierter Domain, z.B. "Kontaktformular <kontakt@fynnpetersen.de>"
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function escapeHtml(str) {
@@ -60,7 +60,7 @@ function buildEmailHtml({ name, email, message }) {
             </tr>
             <tr>
               <td style="padding:18px 32px; border-top:1px solid #e6e6e6; font-size:12px; color:#8a8a8a;">
-                Gesendet über das Kontaktformular auf fynnpetersen.dev
+                Gesendet über das Kontaktformular auf fynnpetersen.de
               </td>
             </tr>
           </table>
