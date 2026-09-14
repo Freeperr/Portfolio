@@ -64,3 +64,44 @@ livePreviews.forEach((el) => {
 
 // Footer year
 document.getElementById("year").textContent = new Date().getFullYear();
+
+// Kontaktformular (sendet über /api/contact an Resend)
+const contactForm = document.getElementById("contact-form");
+if (contactForm) {
+  const statusEl = document.getElementById("cf-status");
+  const submitBtn = contactForm.querySelector("button[type='submit']");
+
+  contactForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    statusEl.textContent = "";
+    statusEl.classList.remove("success", "error");
+
+    const payload = Object.fromEntries(new FormData(contactForm).entries());
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Wird gesendet…";
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || "Nachricht konnte nicht gesendet werden.");
+      }
+
+      contactForm.reset();
+      statusEl.textContent = "Danke! Ich melde mich so schnell wie möglich.";
+      statusEl.classList.add("success");
+    } catch (err) {
+      statusEl.textContent = err.message || "Etwas ist schiefgelaufen. Bitte versuch es später erneut.";
+      statusEl.classList.add("error");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Nachricht senden";
+    }
+  });
+}

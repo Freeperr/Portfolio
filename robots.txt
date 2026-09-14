@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://freeperr.dev/sitemap.xml
+Sitemap: https://fynnpetersen.dev/sitemap.xml
