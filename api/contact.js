@@ -1,6 +1,6 @@
 // Vercel Serverless Function. Benötigte Environment-Variablen (im Vercel-Dashboard setzen):
 //   RESEND_API_KEY     – API-Key aus dem Resend-Dashboard
-//   CONTACT_TO_EMAIL    – Empfänger-Adresse, z.B. hallo@fynnpetersen.de
+//   CONTACT_TO_EMAIL    – Empfänger-Adresse, z.B. info@fynnpetersen.de
 //   CONTACT_FROM_EMAIL  – Absender auf verifizierter Domain, z.B. "Kontaktformular <kontakt@fynnpetersen.de>"
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
