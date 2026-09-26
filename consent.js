@@ -1,6 +1,7 @@
 // Cookie-Einwilligung: speichert nur die Auswahl im localStorage und lädt
 // externe Inhalte (Google Fonts, Live-Vorschauen) erst nach Zustimmung.
 const CONSENT_KEY = "fp-consent";
+const DEFAULT_EXTERNAL = false;
 const FONT_HREF =
   "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap";
 
@@ -73,7 +74,7 @@ const makePlaceholder = (host) => {
 
   const title = document.createElement("span");
   title.className = "preview-placeholder-title";
-  title.textContent = "Vorschau laden";
+  title.textContent = host ? `Vorschau von ${host} laden` : "Vorschau laden";
 
   const hint = document.createElement("span");
   hint.className = "preview-placeholder-hint";
@@ -83,32 +84,39 @@ const makePlaceholder = (host) => {
   return button;
 };
 
-// Live-Vorschauen laden – oder bei fehlender Zustimmung wieder entfernen
+// Eine einzelne Live-Vorschau laden – oder wieder blockieren.
+const setPreview = (box, allowed) => {
+  const frame = box.querySelector("iframe");
+  const url = frame ? frame.getAttribute("data-src") : null;
+  if (!url) return;
+
+  if (allowed) {
+    const placeholder = box.querySelector("[data-preview-load]");
+    if (placeholder) placeholder.remove();
+    if (frame.getAttribute("data-fp-loaded") === "1") return;
+
+    frame.setAttribute("data-fp-loaded", "1");
+    frame.addEventListener("load", () => {
+      frame.classList.add("is-loaded");
+      box.classList.add("is-loaded");
+    });
+    frame.src = url;
+    return;
+  }
+
+  // Das Element bleibt erhalten, damit eine später erneut erteilte
+  // Einwilligung die Vorschau wieder laden kann.
+  frame.removeAttribute("src");
+  frame.removeAttribute("data-fp-loaded");
+  frame.classList.remove("is-loaded");
+  box.classList.remove("is-loaded");
+  if (!box.querySelector("[data-preview-load]")) {
+    box.appendChild(makePlaceholder(hostOf(url)));
+  }
+};
+
 const setPreviews = (allowed) => {
-  document.querySelectorAll(".live-preview").forEach((box) => {
-    const frame = box.querySelector("iframe");
-    const url = frame ? frame.getAttribute("data-src") : null;
-    if (!url) return;
-
-    if (allowed) {
-      const placeholder = box.querySelector("[data-preview-load]");
-      if (placeholder) placeholder.remove();
-      if (frame.getAttribute("data-fp-loaded") === "1") return;
-
-      frame.setAttribute("data-fp-loaded", "1");
-      frame.addEventListener("load", () => {
-        frame.classList.add("is-loaded");
-        box.classList.add("is-loaded");
-      });
-      frame.src = url;
-    } else {
-      if (frame.getAttribute("data-fp-loaded") === "1") frame.remove();
-      box.classList.remove("is-loaded");
-      if (!box.querySelector("[data-preview-load]")) {
-        box.appendChild(makePlaceholder(hostOf(url)));
-      }
-    }
-  });
+  document.querySelectorAll(".live-preview").forEach((box) => setPreview(box, allowed));
 };
 
 const bannerMarkup = `
@@ -169,7 +177,8 @@ const hideBanner = () => {
 const openBanner = () => {
   if (!banner) return;
   const toggle = banner.querySelector("#cookie-external");
-  if (toggle) toggle.checked = externalAllowed();
+  const consent = readConsent();
+  if (toggle) toggle.checked = consent ? consent.external === true : DEFAULT_EXTERNAL;
 
   window.clearTimeout(closeTimer);
   bannerOpen = true;
@@ -223,10 +232,8 @@ const init = () => {
 
   document.addEventListener("click", (event) => {
     if (closestFrom(event.target, "[data-preview-load]")) {
-      writeConsent(true);
-      loadFonts();
-      setPreviews(true);
-      openBanner();
+      const preview = closestFrom(event.target, ".live-preview");
+      if (preview) setPreview(preview, true);
       return;
     }
 
@@ -237,12 +244,24 @@ const init = () => {
     }
 
     const action = closestFrom(event.target, "[data-consent]");
-    if (!action) return;
-    if (action.dataset.consent === "necessary") {
-      const toggle = banner.querySelector("#cookie-external");
-      if (toggle) toggle.checked = false;
+    if (action) {
+      if (action.dataset.consent === "necessary") {
+        const toggle = banner.querySelector("#cookie-external");
+        if (toggle) toggle.checked = false;
+      }
+      saveConsent();
+      return;
     }
-    saveConsent();
+
+    // Navigation und andere Bedienelemente sollen nicht durch den Hinweis
+    // ausgebremst werden. Beim Verlassen des Banners gilt daher die
+    // datensparsame Auswahl „nur notwendige“.
+    if (bannerOpen && closestFrom(event.target, "a, button")) {
+      writeConsent(false);
+      unloadFonts();
+      setPreviews(false);
+      hideBanner();
+    }
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && bannerOpen) hideBanner();
